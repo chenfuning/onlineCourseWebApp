@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<style>
+			.caidang{
+				width: 30%;
+				height: 300px;
+				display:inline;
+			}
+			.ziye{
+				width: 60%;
+				height: auto;
+				float: right;
+				display:inline;
+			}
+			.daohanglan{
+				width: 200px;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div style="float: left;display:inline;">
+			<div id="segmentedControl" class="">
+				<ul id="parent_code_main">
+					<!-- <li><a class="daohanglan mui-control-item mui-active" id="daichuli"  href="#item1mobile">  
+							待处理  
+						</a> </li>
+					 <li><a class="daohanglan mui-control-item" id="yichuli" href="#item2mobile">  
+							已处理  
+					</a> </li>
+						 
+					 <li><a class="daohanglan mui-control-item" id="yichexiao" href="#item3mobile">  
+							已撤销  
+					</a> </li> -->
+				</ul>
+			</div>
+		</div>
+
+		<div id="parent_code_sons" class="ziye mui-content-padded">
+			<!-- <div id="item_1_mobile"   class="mui-control-content mui-active" >  
+	            <ul class="mui-table-view">  
+	                <li class="mui-table-view-cell">  
+	                        <a href="//ask.dcloud.net.cn/index-2-dels.html">第一个选项卡子项-1</a>  
+	                </li>  
+	                <li class="mui-table-view-cell">  
+	                        <a href="//ask.dcloud.net.cn/index-2-dels.html">第一个选项卡子项-2</a>  
+	                </li>
+	            </ul>  
+	        </div>  
+	        -->
+		</div>
+
+
+		<script src="js/app.js"></script>
+		<script src="js/mui.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			//1.渲染左侧栏的总分类，即course_sort表中code为1，parent_code为0
+			var parent_code_main = document.getElementById("parent_code_main");
+			//2.渲染右边的子页面
+			var parent_code_sons = document.getElementById("parent_code_sons");
+			mui.plusReady(function() {
+				//渲染分类页面 
+				//调用后端--
+				initDate();
+				//点击下方选项卡,触发查询好友请求列表
+				var thisWebview = plus.webview.currentWebview();
+				thisWebview.addEventListener("show", function() {
+
+					loadingSortMain();
+					loadingSortSec();
+					mui('#parent_code_sons').on('tap', ".sort_list_id", function() {
+						var courseid = this.getAttribute("sortid");
+						//打开视频子页面
+						mui.openWindow({
+							url: "videoList.html",
+							id: "videoList-" + courseid, // 每个朋友的聊天页面都是唯一对应的
+							extras: {
+								courSeid: courseid,
+							}
+						})
+					})
+					//创建自定义事件
+					window.addEventListener("refreshall", function(e) {
+						window.location.reload(); //页面更新 
+					});
+				});
+
+
+			});
+			//初始化
+			function initDate() {
+				ShowParentCodeMain(parent_code_main, parent_code_sons);
+				ShowParentCodeSons();
+			}
+			//调用后端--获取左侧导航栏
+			//<li><a class="daohanglan mui-control-item mui-active" id="daichuli"  href="#item1mobile"> 待处理  </a> </li>
+			function ShowParentCodeMain(parent_code_main, parent_code_sons) {
+				var html;
+				//调用后端--获取右边侧导航栏
+				mui.ajax(app.serverUrl + "/c/querycourselist?type=0", {
+					data: {},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					success: function(data) {
+						//console.log(JSON.stringify(data));
+						var code_f_list = data.data;
+						//缓存到本地
+						app.saveSortMain(code_f_list);
+						//loadingSortMain();
+					},
+				});
+			}
+
+			function loadingSortMain() {
+				var html = "";
+				var htmldiv = "";
+				//渲染页面
+				for (var i = 0; i < app.getSortMain().length; i++) {
+					html += '<li><a class="daohanglan mui-control-item mui-active" id="daichuli"  href="#item_' + app.getSortMain()[i]
+						.code + '_mobile">' + app.getSortMain()[i].name + ' </a> </li>';
+				}
+				parent_code_main.innerHTML = html;
+				htmldiv = '<div id="item_' + app.getSortMain()[0].code + '_mobile"   class="mui-control-content mui-active"  >' +
+					'<ul class="sort_id mui-table-view">' +
+					'</ul> ' +
+					'</div>';
+				//在为子页面准备div
+				for (var i = 1; i < app.getSortMain().length; i++) {
+					htmldiv += '<div id="item_' + app.getSortMain()[i].code + '_mobile"   class="mui-control-content" >' +
+						'<ul class="sort_id mui-table-view">' +
+						'</ul> ' +
+						'</div>';
+				}
+
+				parent_code_sons.innerHTML = htmldiv;
+			}
+
+
+			//调用后端--获取右边侧导航栏
+			function ShowParentCodeSons() {
+				var html;
+				//获取parentcode不为0的列表
+				//调用后端--获取右边侧导航栏
+				mui.ajax(app.serverUrl + "/c/querycourselist?type=1", {
+					data: {},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					success: function(data) {
+						//console.log(JSON.stringify(data));
+						var code_f_list = data.data;
+						//缓存到本地
+						app.saveSort_sec(code_f_list);
+					},
+				});
+			}
+
+			function loadingSortSec() {
+				var html = "";
+				//渲染页面
+				for (var i = 0; i < app.getSort_sec().length; i++) {
+					var idhtml = document.getElementById('item_' + app.getSort_sec()[i].parentCode + '_mobile');
+					html = "";
+					html = '<li sortid="' + app.getSort_sec()[i].csid + '" class="sort_list_id mui-table-view-cell">' +
+						' <a href="#">' + app.getSort_sec()[i].name + '</a>' +
+						'</li>';
+					idhtml.insertAdjacentHTML('beforeEnd', html);
+				}
+			}
+		</script>
+	</body>
+
+</html>

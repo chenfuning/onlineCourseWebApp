@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link href="css/video.css" rel="stylesheet" />
+		<style type="text/css">
+			* {
+				-webkit-user-select: none;
+			}
+
+			html,
+			body {
+				margin: 0px;
+				padding: 0px;
+				height: 100%;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="video_main">
+			<nav class="mui-bar-tab">
+				<a class="mui-tab-item mui-control-item mui-active" href="#item1mobile">章节</a>
+				<a class="mui-tab-item mui-control-item" href="#item2mobile">详情</a>
+				<a class="mui-tab-item mui-control-item" href="#item3mobile">评论</a>
+			</nav>
+		</div>
+		<div class="mui-content-padded">
+			<div class="mui-control-content mui-active" id="item1mobile">
+				<ul class="mui-table-view" id="zhang_li">
+					<!-- <li class="zhang_li mui-table-view-cell mui-collapse">
+						<a class="mui-navigate-right" href="#">面板1</a>
+						<div class="mui-collapse-content">
+							<p>面板1子内容</p>
+						</div>
+					</li> -->
+				</ul>
+			</div>
+			<div class="mui-control-content" id="item2mobile">
+				<ul class="mui-table-view">
+					<li class="mui-table-view-cell mui-collapse">
+						<a class="mui-navigate-right" href="#">面板2</a>
+						<div class="mui-collapse-content">
+							<p>面板2子内容</p>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="mui-control-content" id="item3mobile">
+				<ul class="mui-table-view">
+					<li class="mui-table-view-cell mui-collapse">
+						<a class="mui-navigate-right" href="#">面板3</a>
+						<div class="mui-collapse-content">
+							<p>面板3子内容</p>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<script src="js/app.js"></script>
+		<script src="js/mui.js"></script>
+		<script type="text/javascript">
+			var MainCourseId = "";
+			mui.init({
+				pullRefresh : { 
+					container:"#item1mobile",//下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+					down : {
+					  style:'circle',//必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
+					  color:'#2BD009', //可选，默认“#2BD009” 下拉刷新控件颜色
+					  height:'50px',//可选,默认50px.下拉刷新控件的高度,
+					  range:'100px', //可选 默认100px,控件可下拉拖拽的范围
+					  offset:'300px', //可选 默认0px,下拉刷新控件的起始位置
+					  callback :fresh_data //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+					},
+				}
+			});
+			var player = null;
+			
+			mui.plusReady(function() {
+				initData();
+			});
+
+			function initData() {
+				//接收上一个页面传递的参数
+				//获取聊天页面webview
+				var VideoListWebview = plus.webview.currentWebview();
+				var courseId = VideoListWebview.courseId;
+				MainCourseId = courseId;
+				//调用后台接口，获取视频的url
+				mui.ajax(app.serverUrl + "/c/queryFirstVideo?courseId=" + courseId, {
+					data: {},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(data) {
+						//获取这节课对应的章节所有信息。
+						//console.log(JSON.stringify(data));
+						//缓存到本地
+						var coursezj = data.data;
+						app.saveCourseZj(courseId, coursezj);
+						//渲染html
+						loadingZhtml();
+						loadingJhtml();
+					},
+					error: function() {
+
+					}
+				});
+				// 创建视频播放控件
+				createVideoPlayer();
+			}
+			// 创建视频播放控件
+			function createVideoPlayer() {
+				if (!player) {
+					player = plus.video.createVideoPlayer('videoplayer', {
+						//src:'http://192.168.243.129:88/ning/M00/00/00/wKjzgV4pWyyAO34TAiEoXFy0rls861_big.mp4 ',
+						src: app.getCourseZj(MainCourseId)[1].videoUrl,
+						top: '0px',
+						left: '0px',
+						width: '100%',
+						height: '300px',
+						position: 'static'
+					});
+					plus.webview.currentWebview().append(player);
+				}
+			}
+			//渲染章标题
+			function loadingZhtml(){
+				var zhang_li=document.getElementById("zhang_li");
+				var html='';	
+				//遍历缓存里面的每一条记录
+				var courseZj=app.getCourseZj(MainCourseId);
+				for (var i = 0; i < courseZj.length; i++) {
+					if(courseZj[i].parentId==0){
+						html+=
+						'<li id="zhang_li_'+courseZj[i].sort+'" class="zhang_li mui-table-view-cell mui-collapse">'+
+							'<a class="mui-navigate-right" href="#">'+courseZj[i].name+'</a>'+
+						'</li>';
+					}
+				}
+				zhang_li.innerHTML=html;
+			}
+			//渲染节标题
+			function loadingJhtml(){
+				var html='';
+				//遍历缓存里面的每一条记录
+				var courseZj=app.getCourseZj(MainCourseId);
+				for (var i = 0; i < courseZj.length; i++) {
+					if(courseZj[i].parentId!=0){
+							var jie_li=document.getElementById("zhang_li_"+courseZj[i].parentId);
+							html=
+								'<div class="mui-collapse-content">'+
+									'<p>'+courseZj[i].name+'</p>'+
+								'</div>';
+							jie_li.innerHTML+=html;
+					}
+				}
+			}
+			
+			function fresh_data(){
+				
+				//清空缓存
+				app.removeCourseZj(MainCourseId);
+				//在重新执行
+				initData();
+				
+				mui('#item1mobile').pullRefresh().endPulldown();
+			}
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,37 @@
+{
+  "id": "1621259",
+  "name": "online-",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "2059524",
+      "name": "我的学习任务",
+      "font_class": "wodexuexirenwu",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "5416379",
+      "name": "账号",
+      "font_class": "zhanghao",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "9876817",
+      "name": "分类-未选中",
+      "font_class": "leimupinleifenleileibie1-outline",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "11901169",
+      "name": "首页-选中",
+      "font_class": "home",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <script src="js/mui.min.js"></script>
+    <link href="css/mui.min.css" rel="stylesheet"/>
+	<link href="css/header.css"  rel="stylesheet"/>
+	<link rel="stylesheet" href="font_1621259_mf6919g5k2/iconfont.css">
+	  <script type="text/javascript" charset="utf-8">
+			mui.init();
+		mui.plusReady(function(){
+			plus.navigator.setStatusBarStyle("light");
+			plus.navigator.setStatusBarBackground("#007AFF");
+		})
+	  </script>
+</head>
+<body>
+	<header class="mui-bar mui-bar-nav title">
+		<h1 id="wx_title" class="mui-title title-color"><b>在线网课</b></h1>
+	</header>
+	<nav class="mui-bar mui-bar-tab">
+		<a class="mui-tab-item mui-active" tabindex="0">
+			<span class="mui-icon iconfont icon-home"></span>
+			<span class="mui-tab-label">首页</span>
+		</a>
+		<a class="mui-tab-item" tabindex="1">
+			<span class="mui-icon iconfont icon-leimupinleifenleileibie1-outline" ></span>
+			<span class="mui-tab-label">分类</span>
+		</a>
+		<a class="mui-tab-item" tabindex="2">
+			<span class="mui-icon iconfont icon-wodexuexirenwu" ></span>
+			<span class="mui-tab-label">我的学习</span>
+		</a>
+		<a class="mui-tab-item" tabindex="3">
+			<span class="mui-icon iconfont icon-zhanghao" ></span>
+			<span class="mui-tab-label">账号</span>
+		</a>
+	</nav>
+	<script type="text/javascript">
+		//存放子页面的数组
+		var wxArray=[
+			{
+				pageId:"ning_main.html",
+				pageUrl:"ning_main.html"
+			},
+			{
+				pageId:"ning_sort.html",
+				pageUrl:"ning_sort.html"
+			},
+			{
+				pageId:"ning_study.html",
+				pageUrl:"ning_study.html"
+			},
+			{
+				pageId:"ning_me.html",
+				pageUrl:"ning_me.html"
+			},
+		];
+		
+		var wxStyle={
+			top:"44px",
+			bottom:"50px"
+		};
+		
+		mui.plusReady(function(){
+			//重写mui.back()的方法，禁止手机返回键的使用
+			mui.back=function(){
+				return false;
+			}
+			//创建自定义事件
+			window.addEventListener("refreshall", function(e) { 
+				window.location.reload();//页面更新 
+			});
+			<!-- 初始布局-->
+			//获取当前的webview对象
+			var indexWebView=plus.webview.currentWebview();
+			//向当前的主页webview追加子页的4张webview
+			for(var i=0;i<wxArray.length;i++){
+				var wxpage=plus.webview.create(wxArray[i].pageUrl,wxArray[i].pageId,wxStyle);
+				//每创建一个webpage就将其隐藏
+				wxpage.hide();
+				//放到index的webview
+				indexWebView.append(wxpage);
+			}
+			
+			plus.webview.show(wxArray[0].pageId);
+			//批量绑定tap事件，显示不同的页面
+			mui(".mui-bar-tab").on("tap","a",function(){
+				//获取点击a的tabindex的值
+				var tabindex=this.getAttribute("tabindex");
+				//显示点击的webview
+				if(tabindex==1){
+					mui.fire(plus.webview.getWebviewById("ning_me.html"),'refreshall');
+				}
+				plus.webview.show(wxArray[tabindex].pageId,"fade-in",100);
+				//隐藏其他的webview
+				for(var i=0;i<wxArray.length;i++){
+					if(i!=tabindex){
+						plus.webview.hide(wxArray[i].pageId,"fade-in",100);
+					}
+				}
+			});
+		});
+	
+			
+		</script>
+</body>
+</html>
